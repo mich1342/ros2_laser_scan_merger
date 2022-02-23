@@ -3,6 +3,9 @@ import launch_ros.actions
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
 
+from ament_index_python.packages import get_package_share_directory
+import os
+
 def generate_launch_description():
     pointCloudTopic = LaunchConfiguration('pointCloudTopic', default="point_cloud_merged")
     pointCloutFrameId = LaunchConfiguration('pointCloutFrameId', default="laser")
@@ -30,7 +33,10 @@ def generate_launch_description():
     laser2G = LaunchConfiguration('laser2G', default=0)
     laser2B = LaunchConfiguration('laser2B', default=255)
     show2 = LaunchConfiguration('show2', default=True)
-
+    rviz_config_dir = os.path.join(
+            get_package_share_directory('ros2_laser_scan_merger'),
+            'rviz',
+            'ros2_laser_scan_merge.rviz')
     return LaunchDescription([
         DeclareLaunchArgument(
             'pointCloudTopic',
@@ -186,5 +192,13 @@ def generate_launch_description():
                 'show2' : show2,
             }],
             output='screen',
+        ),
+        launch_ros.actions.Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config_dir],
+            output='screen'
         )
     ])
+
