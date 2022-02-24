@@ -1,3 +1,8 @@
+#
+#   created by: Michael Jonathan (mich1342)
+#   github.com/mich1342
+#   24/2/2022
+#
 from launch import LaunchDescription
 import launch_ros.actions
 from launch.substitutions import LaunchConfiguration
@@ -7,9 +12,11 @@ from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
+    #general parameter for the cloud
     pointCloudTopic = LaunchConfiguration('pointCloudTopic', default="point_cloud_merged")
     pointCloutFrameId = LaunchConfiguration('pointCloutFrameId', default="laser")
     
+    #parameter for the first laserscan, feel free to duplicate and rename for other laserscans
     scanTopic1 = LaunchConfiguration('scanTopic1', default="A2/scan")
     laser1XOff = LaunchConfiguration('laser1XOff', default=0.0)
     laser1YOff = LaunchConfiguration('laser1YOff', default=0.0)
@@ -22,6 +29,7 @@ def generate_launch_description():
     laser1B = LaunchConfiguration('laser1B', default=0)
     show1 = LaunchConfiguration('show1', default=True)
 
+    #parameter for the second laserscan, feel free to duplicate and rename for other laserscans
     scanTopic2 = LaunchConfiguration('scanTopic2', default="S1/scan")
     laser2XOff = LaunchConfiguration('laser2XOff', default=0.0)
     laser2YOff = LaunchConfiguration('laser2YOff', default=0.0)

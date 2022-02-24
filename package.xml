@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>ros2_laser_scan_merger</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>A Package to combine several laser scan value</description>
   <maintainer email="michaeljonathan664@gmail.com">mich1342</maintainer>
   <license>Apache Lisence 2.0</license>

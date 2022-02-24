@@ -1,3 +1,9 @@
+//
+//   created by: Michael Jonathan (mich1342)
+//   github.com/mich1342
+//   24/2/2022
+//
+
 #include <rclcpp/rclcpp.hpp>
 #include "sensor_msgs/msg/laser_scan.hpp"
 
@@ -92,32 +98,7 @@ class scanMerger : public rclcpp::Node
     }
     
     void initialize_params(){
-        //this->declare_parameter<std::string>("pointCloudTopic", "point_cloud_merged");
-        // this->declare_parameter<std::string>("pointCloutFrameId", "laser");
-
-        // this->declare_parameter<std::string>("scanTopic1", "A2/scan");
-        // this->declare_parameter<float>("laser1XOff", 0);
-        // this->declare_parameter<float>("laser1YOff", 0);
-        // this->declare_parameter<float>("laser1ZOff", 0);
-        // this->declare_parameter<float>("laser1Alpha", 0);
-        // this->declare_parameter<float>("laser1AngleMin", -181);
-        // this->declare_parameter<float>("laser1AngleMax", 181);
-        // this->declare_parameter<int>("laser1R", 0);
-        // this->declare_parameter<int>("laser1G", 0);
-        // this->declare_parameter<int>("laser1B", 0);
-        // this->declare_parameter<bool>("show1", true);
-
-        // this->declare_parameter<std::string>("scanTopic2", "S1/scan");
-        // this->declare_parameter<float>("laser2XOff", 0);
-        // this->declare_parameter<float>("laser2YOff", 0);
-        // this->declare_parameter<float>("laser2ZOff", 0);
-        // this->declare_parameter<float>("laser2Alpha", 0);
-        // this->declare_parameter<float>("laser2AngleMin", -181);
-        // this->declare_parameter<float>("laser2AngleMax", 181);
-        // this->declare_parameter<int>("laser2R", 0);
-        // this->declare_parameter<int>("laser2G", 0);
-        // this->declare_parameter<int>("laser2B", 0);
-        // this->declare_parameter<bool>("show2", false);
+        
         this->declare_parameter("pointCloudTopic");
         this->declare_parameter("pointCloutFrameId");
 
@@ -172,32 +153,7 @@ class scanMerger : public rclcpp::Node
         this->get_parameter_or<int>("laser2B",laser2B_, 0);
         this->get_parameter_or<bool>("show2",show2_, false);
 
-        //this->get_parameter("pointCloudTopic", cloudTopic_);
-        // this->get_parameter("pointCloutFrameId", cloudFrameId_);
-
-        // this->get_parameter("scanTopic1", topic1_);
-        // this->get_parameter("laser1XOff", laser1XOff_);
-        // this->get_parameter("laser1YOff", laser1YOff_);
-        // this->get_parameter("laser1ZOff", laser1ZOff_);
-        // this->get_parameter("laser1Alpha", laser1Alpha_);
-        // this->get_parameter("laser1AngleMin", laser1AngleMin_);
-        // this->get_parameter("laser1AngleMax", laser1AngleMax_);
-        // this->get_parameter("laser1R", laser1R_);
-        // this->get_parameter("laser1G", laser1G_);
-        // this->get_parameter("laser1B", laser1B_);
-        // this->get_parameter("show1", show1_);
         
-        // this->get_parameter("scanTopic2", topic2_);
-        // this->get_parameter("laser2XOff", laser2XOff_);
-        // this->get_parameter("laser2YOff", laser2YOff_);
-        // this->get_parameter("laser2ZOff", laser2ZOff_);
-        // this->get_parameter("laser2Alpha", laser2Alpha_);
-        // this->get_parameter("laser2AngleMin", laser2AngleMin_);
-        // this->get_parameter("laser2AngleMax", laser2AngleMax_);
-        // this->get_parameter("laser2R", laser2R_);
-        // this->get_parameter("laser2G", laser2G_);
-        // this->get_parameter("laser2B", laser2B_);
-        // this->get_parameter("show2", show2_);
     }
     std::string topic1_, topic2_, cloudTopic_, cloudFrameId_;
     bool show1_, show2_;
