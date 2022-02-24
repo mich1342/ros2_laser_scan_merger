@@ -27,7 +27,7 @@ ros2 launch ros2_laser_scan_merger merge_2_scan.launch.py
 ```bash
 ros2 launch ros2_laser_scan_merger visualize_merge_2_scan.launch.py
 ```
-*Make sure that your laserscans topics already published before launch anything from this package
+*Make sure that your laserscans topics already published before launch anything from this package <br />
 5. Open RQT to set the parameter
 ```bash
 rqt
