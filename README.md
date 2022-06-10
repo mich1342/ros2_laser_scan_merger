@@ -4,9 +4,10 @@ A full c++ based ros2 package to merge several laserscan / lidars topics by crea
 
 ## Prerequisite
 1. ROS2 (Tested on Foxy)
-2. Your laserscans driver (Tested using RPLIDAR A2 and RPLIDAR S1)
+2. Your laserscans driver (Tested using RPLIDAR S1 and RPLIDAR S1)
 3. RVIZ2
 4. RQT
+5. [Pointcloud to Laserscan](https://github.com/ros-perception/pointcloud_to_laserscan)
 
 ## How to use 
 1. Clone the repo to your ros2 workspace
@@ -28,8 +29,10 @@ ros2 launch ros2_laser_scan_merger merge_2_scan.launch.py
 ```bash
 ros2 launch ros2_laser_scan_merger visualize_merge_2_scan.launch.py
 ```
+5. Launch the Pointcloud to Laserscan nodes
+
 *Make sure that your laserscans topics already published before launch anything from this package <br />
-5. Open RQT to set the parameter
+6. Open RQT to set the parameter
 ```bash
 rqt
 ```
