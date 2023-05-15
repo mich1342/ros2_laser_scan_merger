@@ -40,6 +40,8 @@ def generate_launch_description():
     laser2B = LaunchConfiguration('laser2B', default=255)
     show2 = LaunchConfiguration('show2', default=True)
 
+    mergedScanTopic = LaunchConfiguration('mergedScanTopic', default="/scan")
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'pointCloudTopic',
@@ -163,6 +165,14 @@ def generate_launch_description():
             default_value=show2,
             description='desc',
         ),
+
+        DeclareLaunchArgument(
+            'mergedScanTopic',
+            default_value=mergedScanTopic,
+            description='desc',
+        ),
+        
+
         
         
         launch_ros.actions.Node(
@@ -193,6 +203,7 @@ def generate_launch_description():
                 'laser2G' : laser2G,
                 'laser2B' : laser2B,
                 'show2' : show2,
+                'mergedScanTopic' : mergedScanTopic
             }],
             output='screen',
             respawn=True,
