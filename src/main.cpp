@@ -29,7 +29,9 @@ class scanMerger : public rclcpp::Node
         
         initialize_params();
         refresh_params();
-        
+
+        laser1_ = std::make_shared<sensor_msgs::msg::LaserScan>();
+        laser2_ = std::make_shared<sensor_msgs::msg::LaserScan>();
         
         auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
         sub1_ = this->create_subscription<sensor_msgs::msg::LaserScan>(topic1_, default_qos, std::bind(&scanMerger::scan_callback1, this, std::placeholders::_1));
