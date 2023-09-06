@@ -58,7 +58,7 @@ class scanMerger : public rclcpp::Node
         pcl::PointCloud<pcl::PointXYZ> cloud_;
         std::vector<std::array<float,3>> scan_data;
         int count = 0;
-        
+
         std::array<float,3> push_data;
         if(show1_){
             for (float i = laser1_->angle_min; i <= laser1_->angle_max; i += laser1_->angle_increment){
@@ -77,7 +77,7 @@ class scanMerger : public rclcpp::Node
                 count++;
             }
         }
-        
+
         count = 0;
         if(show2_){
             for (float i = laser2_->angle_min; i <= laser2_->angle_max; i += laser2_->angle_increment){
@@ -128,7 +128,7 @@ class scanMerger : public rclcpp::Node
         float min_theta = 0;
         float max_theta = 0;
         if(show1_){
-            for (float i = laser1_->angle_min; i <= laser1_->angle_max; i += laser1_->angle_increment){
+            for (float i = laser1_->angle_min; i <= laser1_->angle_max && count < laser1_->ranges.size(); i += laser1_->angle_increment){
                 pcl::PointXYZRGB pt;
                 pt = pcl::PointXYZRGB(laser1R_, laser1G_, laser1B_);
                 
@@ -166,7 +166,7 @@ class scanMerger : public rclcpp::Node
         
         count = 0;
         if(show2_){
-            for (float i = laser2_->angle_min; i <= laser2_->angle_max; i += laser2_->angle_increment){
+            for (float i = laser2_->angle_min; i <= laser2_->angle_max && count < laser2_->ranges.size(); i += laser2_->angle_increment){
                 pcl::PointXYZRGB pt;
                 pt = pcl::PointXYZRGB(laser2R_, laser2G_, laser2B_);
                 
