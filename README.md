@@ -29,10 +29,9 @@ ros2 launch ros2_laser_scan_merger merge_2_scan.launch.py
 ```bash
 ros2 launch ros2_laser_scan_merger visualize_merge_2_scan.launch.py
 ```
-5. Launch the Pointcloud to Laserscan nodes
+Both of the launch file already integrated with the pointclound_to_laserscan package 
 
-*Make sure that your laserscans topics already published before launch anything from this package <br />
-6. Open RQT to set the parameter
+5. Open RQT to set the parameter
 ```bash
 rqt
 ```
