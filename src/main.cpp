@@ -19,241 +19,268 @@
 #include <array>
 #include <iostream>
 
-
 class scanMerger : public rclcpp::Node
 {
-    public:
-    scanMerger()
-    : Node("ros2_laser_scan_merger")
+public:
+  scanMerger() : Node("ros2_laser_scan_merger")
+  {
+    initialize_params();
+    refresh_params();
+
+    laser1_ = std::make_shared<sensor_msgs::msg::LaserScan>();
+    laser2_ = std::make_shared<sensor_msgs::msg::LaserScan>();
+
+    auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
+    sub1_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        topic1_, default_qos, std::bind(&scanMerger::scan_callback1, this, std::placeholders::_1));
+    sub2_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        topic2_, default_qos, std::bind(&scanMerger::scan_callback2, this, std::placeholders::_1));
+
+    point_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(cloudTopic_, rclcpp::SystemDefaultsQoS());
+    RCLCPP_INFO(this->get_logger(), "Hello");
+  }
+
+private:
+  void scan_callback1(const sensor_msgs::msg::LaserScan::SharedPtr _msg)
+  {
+    laser1_ = _msg;
+    update_point_cloud_rgb();
+    // RCLCPP_INFO(this->get_logger(), "I heard: '%f' '%f'", _msg->ranges[0],
+    //         _msg->ranges[100]);
+  }
+  void scan_callback2(const sensor_msgs::msg::LaserScan::SharedPtr _msg)
+  {
+    laser2_ = _msg;
+    // RCLCPP_INFO(this->get_logger(), "I heard: '%f' '%f'", _msg->ranges[0],
+    //         _msg->ranges[100]);
+  }
+
+  void update_point_cloud_rgb()
+  {
+    refresh_params();
+    pcl::PointCloud<pcl::PointXYZRGB> cloud_;
+    std::vector<std::array<float, 2>> scan_data;
+    int count = 0;
+    float min_theta = 0;
+    float max_theta = 0;
+    if (show1_ && laser1_)
     {
-        
-        initialize_params();
-        refresh_params();
+      for (float i = laser1_->angle_min; i <= laser1_->angle_max && count < laser1_->ranges.size();
+           i += laser1_->angle_increment)
+      {
+        pcl::PointXYZRGB pt;
+        pt = pcl::PointXYZRGB(laser1R_, laser1G_, laser1B_);
 
-        laser1_ = std::make_shared<sensor_msgs::msg::LaserScan>();
-        laser2_ = std::make_shared<sensor_msgs::msg::LaserScan>();
-        
-        auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
-        sub1_ = this->create_subscription<sensor_msgs::msg::LaserScan>(topic1_, default_qos, std::bind(&scanMerger::scan_callback1, this, std::placeholders::_1));
-        sub2_ = this->create_subscription<sensor_msgs::msg::LaserScan>(topic2_, default_qos, std::bind(&scanMerger::scan_callback2 , this, std::placeholders::_1));
-        
-        point_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(cloudTopic_, rclcpp::SystemDefaultsQoS());
-        RCLCPP_INFO(this->get_logger(), "Hello");
-    }
-    private:
-    void scan_callback1(const sensor_msgs::msg::LaserScan::SharedPtr _msg) {
-        laser1_ = _msg;
-        update_point_cloud_rgb();
-        // RCLCPP_INFO(this->get_logger(), "I heard: '%f' '%f'", _msg->ranges[0],
-        //         _msg->ranges[100]);
-    }
-    void scan_callback2(const sensor_msgs::msg::LaserScan::SharedPtr _msg) {
-        laser2_ = _msg;
-        // RCLCPP_INFO(this->get_logger(), "I heard: '%f' '%f'", _msg->ranges[0],
-        //         _msg->ranges[100]);
-    }
-    
-    void update_point_cloud_rgb(){
-        refresh_params();
-        pcl::PointCloud<pcl::PointXYZRGB> cloud_;
-        std::vector<std::array<float,2>> scan_data;
-        int count = 0;
-        float min_theta = 0;
-        float max_theta = 0;
-        if(show1_ && laser1_){
-            for (float i = laser1_->angle_min; i <= laser1_->angle_max && count < laser1_->ranges.size(); i += laser1_->angle_increment){
-                pcl::PointXYZRGB pt;
-                pt = pcl::PointXYZRGB(laser1R_, laser1G_, laser1B_);
-                
-                float temp_x = laser1_->ranges[count] * std::cos(i) ;
-                float temp_y = laser1_->ranges[count] * std::sin(i) ;
-                pt.x = temp_x * std::cos(laser1Alpha_ * M_PI / 180) - temp_y * std::sin(laser1Alpha_ * M_PI / 180) + laser1XOff_;
-                pt.y = temp_x * std::sin(laser1Alpha_ * M_PI / 180) + temp_y * std::cos(laser1Alpha_ * M_PI / 180) + laser1YOff_;
-                pt.z = laser1ZOff_;
-                if (i < (laser1AngleMin_ * M_PI / 180)){
-
-                }else if(i > (laser1AngleMax_ * M_PI / 180)){
-
-                }else{
-                    cloud_.points.push_back(pt);
-                    float r_ = GET_R(pt.x, pt.y);
-                    float theta_ = GET_THETA(pt.x, pt.y);
-                    std::array<float,2> res_;
-                    res_[1] = r_;
-                    res_[0] = theta_;
-                    scan_data.push_back(res_);
-                    if(theta_ < min_theta){
-                        min_theta = theta_;
-                    }
-                    if(theta_ > max_theta){
-                        max_theta = theta_;
-                    }
-                    
-                }
-                count++;
-            }
+        float temp_x = laser1_->ranges[count] * std::cos(i);
+        float temp_y = laser1_->ranges[count] * std::sin(i);
+        pt.x =
+            temp_x * std::cos(laser1Alpha_ * M_PI / 180) - temp_y * std::sin(laser1Alpha_ * M_PI / 180) + laser1XOff_;
+        pt.y =
+            temp_x * std::sin(laser1Alpha_ * M_PI / 180) + temp_y * std::cos(laser1Alpha_ * M_PI / 180) + laser1YOff_;
+        pt.z = laser1ZOff_;
+        if (i < (laser1AngleMin_ * M_PI / 180))
+        {
         }
-        
-        count = 0;
-        if(show2_ && laser2_){
-            for (float i = laser2_->angle_min; i <= laser2_->angle_max && count < laser2_->ranges.size(); i += laser2_->angle_increment){
-                pcl::PointXYZRGB pt;
-                pt = pcl::PointXYZRGB(laser2R_, laser2G_, laser2B_);
-                
-                //pcl::PointXYZ pt;
-                float temp_x = laser2_->ranges[count] * std::cos(i) ;
-                float temp_y = laser2_->ranges[count] * std::sin(i) ;
-                pt.x = temp_x * std::cos(laser2Alpha_ * M_PI / 180) - temp_y * std::sin(laser2Alpha_ * M_PI / 180) + laser2XOff_;
-                pt.y = temp_x * std::sin(laser2Alpha_ * M_PI / 180) + temp_y * std::cos(laser2Alpha_ * M_PI / 180)+ laser2YOff_;
-                pt.z = laser2ZOff_;
-                if (i < (laser2AngleMin_ * M_PI / 180)){
-
-                }else if(i > (laser2AngleMax_ * M_PI / 180)){
-
-                }else{
-                    //if(!(isnan(pt.x)) && !(isnan(pt.y))){
-                        cloud_.points.push_back(pt);
-                    float r_ = GET_R(pt.x, pt.y);
-                    float theta_ = GET_THETA(pt.x, pt.y);
-                    std::array<float,2> res_;
-                    res_[1] = r_;
-                    res_[0] = theta_;
-                    scan_data.push_back(res_);
-                    if(theta_ < min_theta){
-                        min_theta = theta_;
-                    }
-                    if(theta_ > max_theta){
-                        max_theta = theta_;
-                    }
-                    //}
-                    
-                }
-                count++;
-            }
+        else if (i > (laser1AngleMax_ * M_PI / 180))
+        {
         }
-        
-
-        auto pc2_msg_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
-        pcl::toROSMsg(cloud_, *pc2_msg_);
-        pc2_msg_->header.frame_id = cloudFrameId_;
-        pc2_msg_->header.stamp = now();
-        pc2_msg_->is_dense = false;
-        point_cloud_pub_->publish(*pc2_msg_);
-
-        
-    }
-
-    float GET_R(float x, float y){
-        return sqrt(x*x + y*y);
-    }
-    float GET_THETA(float x, float y){
-        float temp_res;
-        if((x!=0)){
-            temp_res = atan(y/x);
-        }else{
-            
-            if(y>=0){
-                temp_res = M_PI / 2;
-            }else{
-                temp_res = -M_PI / 2;
-            }
-            
+        else
+        {
+          cloud_.points.push_back(pt);
+          float r_ = GET_R(pt.x, pt.y);
+          float theta_ = GET_THETA(pt.x, pt.y);
+          std::array<float, 2> res_;
+          res_[1] = r_;
+          res_[0] = theta_;
+          scan_data.push_back(res_);
+          if (theta_ < min_theta)
+          {
+            min_theta = theta_;
+          }
+          if (theta_ > max_theta)
+          {
+            max_theta = theta_;
+          }
         }
-        if(temp_res > 0){
-            if(y < 0 ){
-                temp_res -= M_PI;
-            }
-        }else if(temp_res <0){
-            if(x < 0){
-                temp_res += M_PI;
-            }
+        count++;
+      }
+    }
+
+    count = 0;
+    if (show2_ && laser2_)
+    {
+      for (float i = laser2_->angle_min; i <= laser2_->angle_max && count < laser2_->ranges.size();
+           i += laser2_->angle_increment)
+      {
+        pcl::PointXYZRGB pt;
+        pt = pcl::PointXYZRGB(laser2R_, laser2G_, laser2B_);
+
+        // pcl::PointXYZ pt;
+        float temp_x = laser2_->ranges[count] * std::cos(i);
+        float temp_y = laser2_->ranges[count] * std::sin(i);
+        pt.x =
+            temp_x * std::cos(laser2Alpha_ * M_PI / 180) - temp_y * std::sin(laser2Alpha_ * M_PI / 180) + laser2XOff_;
+        pt.y =
+            temp_x * std::sin(laser2Alpha_ * M_PI / 180) + temp_y * std::cos(laser2Alpha_ * M_PI / 180) + laser2YOff_;
+        pt.z = laser2ZOff_;
+        if (i < (laser2AngleMin_ * M_PI / 180))
+        {
         }
-        //RCLCPP_INFO(this->get_logger(), "x: '%f', y: '%f', a: '%f'", x, y, temp_res);
-        
-        return temp_res;
+        else if (i > (laser2AngleMax_ * M_PI / 180))
+        {
+        }
+        else
+        {
+          // if(!(isnan(pt.x)) && !(isnan(pt.y))){
+          cloud_.points.push_back(pt);
+          float r_ = GET_R(pt.x, pt.y);
+          float theta_ = GET_THETA(pt.x, pt.y);
+          std::array<float, 2> res_;
+          res_[1] = r_;
+          res_[0] = theta_;
+          scan_data.push_back(res_);
+          if (theta_ < min_theta)
+          {
+            min_theta = theta_;
+          }
+          if (theta_ > max_theta)
+          {
+            max_theta = theta_;
+          }
+          //}
+        }
+        count++;
+      }
     }
-    float interpolate(float angle_1, float angle_2, float magnitude_1, float magnitude_2, float current_angle){
-        
-        return (magnitude_1 + current_angle * ((magnitude_2 - magnitude_1)/(angle_2 - angle_1)));
+
+    auto pc2_msg_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
+    pcl::toROSMsg(cloud_, *pc2_msg_);
+    pc2_msg_->header.frame_id = cloudFrameId_;
+    pc2_msg_->header.stamp = now();
+    pc2_msg_->is_dense = false;
+    point_cloud_pub_->publish(*pc2_msg_);
+  }
+
+  float GET_R(float x, float y)
+  {
+    return sqrt(x * x + y * y);
+  }
+  float GET_THETA(float x, float y)
+  {
+    float temp_res;
+    if ((x != 0))
+    {
+      temp_res = atan(y / x);
     }
-    void initialize_params(){
-        
-        this->declare_parameter("pointCloudTopic","base/custom_cloud");
-        this->declare_parameter("pointCloutFrameId","laser");
-
-        this->declare_parameter("scanTopic1","lidar_front_right/scan");
-        this->declare_parameter("laser1XOff",-0.45);
-        this->declare_parameter("laser1YOff",0.24);
-        this->declare_parameter("laser1ZOff",0.0);
-        this->declare_parameter("laser1Alpha",45.0);
-        this->declare_parameter("laser1AngleMin",-181.0);
-        this->declare_parameter("laser1AngleMax",181.0);
-        this->declare_parameter("laser1R",255);
-        this->declare_parameter("laser1G",0);
-        this->declare_parameter("laser1B",0);
-        this->declare_parameter("show1",true);
-
-        this->declare_parameter("scanTopic2","lidar_rear_left/scan");
-        this->declare_parameter("laser2XOff",0.315);
-        this->declare_parameter("laser2YOff",-0.24);
-        this->declare_parameter("laser2ZOff",0.0);
-        this->declare_parameter("laser2Alpha",225.0);
-        this->declare_parameter("laser2AngleMin",-181.0);
-        this->declare_parameter("laser2AngleMax",181.0);
-        this->declare_parameter("laser2R",0);
-        this->declare_parameter("laser2G",0);
-        this->declare_parameter("laser2B",255);
-        this->declare_parameter("show2",true);
-
+    else
+    {
+      if (y >= 0)
+      {
+        temp_res = M_PI / 2;
+      }
+      else
+      {
+        temp_res = -M_PI / 2;
+      }
     }
-    void refresh_params(){
-        this->get_parameter_or<std::string>("pointCloudTopic", cloudTopic_, "pointCloud");
-        this->get_parameter_or<std::string>("pointCloutFrameId",cloudFrameId_, "laser");
-        this->get_parameter_or<std::string>("scanTopic1",topic1_ ,"lidar_front_right/scan");
-        this->get_parameter_or<float>("laser1XOff",laser1XOff_, 0.0);
-        this->get_parameter_or<float>("laser1YOff",laser1YOff_, 0.0);
-        this->get_parameter_or<float>("laser1ZOff",laser1ZOff_, 0.0);
-        this->get_parameter_or<float>("laser1Alpha",laser1Alpha_, 0.0);
-        this->get_parameter_or<float>("laser1AngleMin",laser1AngleMin_, -181.0);
-        this->get_parameter_or<float>("laser1AngleMax",laser1AngleMax_, 181.0);
-        this->get_parameter_or<uint8_t>("laser1R",laser1R_, 0);
-        this->get_parameter_or<uint8_t>("laser1G",laser1G_, 0);
-        this->get_parameter_or<uint8_t>("laser1B",laser1B_, 0);
-        this->get_parameter_or<bool>("show1",show1_, true);
-        this->get_parameter_or<std::string>("scanTopic2",topic2_, "lidar_rear_left/scan");
-        this->get_parameter_or<float>("laser2XOff",laser2XOff_, 0.0);
-        this->get_parameter_or<float>("laser2YOff",laser2YOff_, 0.0);
-        this->get_parameter_or<float>("laser2ZOff",laser2ZOff_, 0.0);
-        this->get_parameter_or<float>("laser2Alpha",laser2Alpha_, 0.0);
-        this->get_parameter_or<float>("laser2AngleMin",laser2AngleMin_,-181.0);
-        this->get_parameter_or<float>("laser2AngleMax",laser2AngleMax_, 181.0);
-        this->get_parameter_or<uint8_t>("laser2R",laser2R_, 0);
-        this->get_parameter_or<uint8_t>("laser2G",laser2G_, 0);
-        this->get_parameter_or<uint8_t>("laser2B",laser2B_, 0);
-        this->get_parameter_or<bool>("show2",show2_, false);
-
-        
+    if (temp_res > 0)
+    {
+      if (y < 0)
+      {
+        temp_res -= M_PI;
+      }
     }
-    std::string topic1_, topic2_, cloudTopic_, cloudFrameId_;
-    bool show1_, show2_;
-    float laser1XOff_, laser1YOff_, laser1ZOff_, laser1Alpha_, laser1AngleMin_, laser1AngleMax_;
-    uint8_t laser1R_, laser1G_, laser1B_;
+    else if (temp_res < 0)
+    {
+      if (x < 0)
+      {
+        temp_res += M_PI;
+      }
+    }
+    // RCLCPP_INFO(this->get_logger(), "x: '%f', y: '%f', a: '%f'", x, y, temp_res);
 
-    float laser2XOff_, laser2YOff_, laser2ZOff_, laser2Alpha_, laser2AngleMin_, laser2AngleMax_;
-    uint8_t laser2R_, laser2G_, laser2B_;
+    return temp_res;
+  }
+  float interpolate(float angle_1, float angle_2, float magnitude_1, float magnitude_2, float current_angle)
+  {
+    return (magnitude_1 + current_angle * ((magnitude_2 - magnitude_1) / (angle_2 - angle_1)));
+  }
+  void initialize_params()
+  {
+    this->declare_parameter("pointCloudTopic", "base/custom_cloud");
+    this->declare_parameter("pointCloutFrameId", "laser");
 
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub1_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub2_;
-    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_pub_;
-    
-    sensor_msgs::msg::LaserScan::SharedPtr laser1_;
-    sensor_msgs::msg::LaserScan::SharedPtr laser2_;
+    this->declare_parameter("scanTopic1", "lidar_front_right/scan");
+    this->declare_parameter("laser1XOff", -0.45);
+    this->declare_parameter("laser1YOff", 0.24);
+    this->declare_parameter("laser1ZOff", 0.0);
+    this->declare_parameter("laser1Alpha", 45.0);
+    this->declare_parameter("laser1AngleMin", -181.0);
+    this->declare_parameter("laser1AngleMax", 181.0);
+    this->declare_parameter("laser1R", 255);
+    this->declare_parameter("laser1G", 0);
+    this->declare_parameter("laser1B", 0);
+    this->declare_parameter("show1", true);
+
+    this->declare_parameter("scanTopic2", "lidar_rear_left/scan");
+    this->declare_parameter("laser2XOff", 0.315);
+    this->declare_parameter("laser2YOff", -0.24);
+    this->declare_parameter("laser2ZOff", 0.0);
+    this->declare_parameter("laser2Alpha", 225.0);
+    this->declare_parameter("laser2AngleMin", -181.0);
+    this->declare_parameter("laser2AngleMax", 181.0);
+    this->declare_parameter("laser2R", 0);
+    this->declare_parameter("laser2G", 0);
+    this->declare_parameter("laser2B", 255);
+    this->declare_parameter("show2", true);
+  }
+  void refresh_params()
+  {
+    this->get_parameter_or<std::string>("pointCloudTopic", cloudTopic_, "pointCloud");
+    this->get_parameter_or<std::string>("pointCloutFrameId", cloudFrameId_, "laser");
+    this->get_parameter_or<std::string>("scanTopic1", topic1_, "lidar_front_right/scan");
+    this->get_parameter_or<float>("laser1XOff", laser1XOff_, 0.0);
+    this->get_parameter_or<float>("laser1YOff", laser1YOff_, 0.0);
+    this->get_parameter_or<float>("laser1ZOff", laser1ZOff_, 0.0);
+    this->get_parameter_or<float>("laser1Alpha", laser1Alpha_, 0.0);
+    this->get_parameter_or<float>("laser1AngleMin", laser1AngleMin_, -181.0);
+    this->get_parameter_or<float>("laser1AngleMax", laser1AngleMax_, 181.0);
+    this->get_parameter_or<uint8_t>("laser1R", laser1R_, 0);
+    this->get_parameter_or<uint8_t>("laser1G", laser1G_, 0);
+    this->get_parameter_or<uint8_t>("laser1B", laser1B_, 0);
+    this->get_parameter_or<bool>("show1", show1_, true);
+    this->get_parameter_or<std::string>("scanTopic2", topic2_, "lidar_rear_left/scan");
+    this->get_parameter_or<float>("laser2XOff", laser2XOff_, 0.0);
+    this->get_parameter_or<float>("laser2YOff", laser2YOff_, 0.0);
+    this->get_parameter_or<float>("laser2ZOff", laser2ZOff_, 0.0);
+    this->get_parameter_or<float>("laser2Alpha", laser2Alpha_, 0.0);
+    this->get_parameter_or<float>("laser2AngleMin", laser2AngleMin_, -181.0);
+    this->get_parameter_or<float>("laser2AngleMax", laser2AngleMax_, 181.0);
+    this->get_parameter_or<uint8_t>("laser2R", laser2R_, 0);
+    this->get_parameter_or<uint8_t>("laser2G", laser2G_, 0);
+    this->get_parameter_or<uint8_t>("laser2B", laser2B_, 0);
+    this->get_parameter_or<bool>("show2", show2_, false);
+  }
+  std::string topic1_, topic2_, cloudTopic_, cloudFrameId_;
+  bool show1_, show2_;
+  float laser1XOff_, laser1YOff_, laser1ZOff_, laser1Alpha_, laser1AngleMin_, laser1AngleMax_;
+  uint8_t laser1R_, laser1G_, laser1B_;
+
+  float laser2XOff_, laser2YOff_, laser2ZOff_, laser2Alpha_, laser2AngleMin_, laser2AngleMax_;
+  uint8_t laser2R_, laser2G_, laser2B_;
+
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub1_;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub2_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_pub_;
+
+  sensor_msgs::msg::LaserScan::SharedPtr laser1_;
+  sensor_msgs::msg::LaserScan::SharedPtr laser2_;
 };
 
-int main(int argc, char * argv[]){
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<scanMerger>());
-    rclcpp::shutdown();
-    return 0;
+int main(int argc, char* argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<scanMerger>());
+  rclcpp::shutdown();
+  return 0;
 }
-
