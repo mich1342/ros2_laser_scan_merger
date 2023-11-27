@@ -78,28 +78,46 @@ private:
         pt.y =
             temp_x * std::sin(laser1Alpha_ * M_PI / 180) + temp_y * std::cos(laser1Alpha_ * M_PI / 180) + laser1YOff_;
         pt.z = laser1ZOff_;
-        if (i < (laser1AngleMin_ * M_PI / 180))
+        if ((i < (laser1AngleMin_ * M_PI / 180)) || (i > (laser1AngleMax_ * M_PI / 180)))
         {
-        }
-        else if (i > (laser1AngleMax_ * M_PI / 180))
-        {
+          if (inverse1_)
+          {
+            cloud_.points.push_back(pt);
+            float r_ = GET_R(pt.x, pt.y);
+            float theta_ = GET_THETA(pt.x, pt.y);
+            std::array<float, 2> res_;
+            res_[1] = r_;
+            res_[0] = theta_;
+            scan_data.push_back(res_);
+            if (theta_ < min_theta)
+            {
+              min_theta = theta_;
+            }
+            if (theta_ > max_theta)
+            {
+              max_theta = theta_;
+            }
+          }
         }
         else
         {
-          cloud_.points.push_back(pt);
-          float r_ = GET_R(pt.x, pt.y);
-          float theta_ = GET_THETA(pt.x, pt.y);
-          std::array<float, 2> res_;
-          res_[1] = r_;
-          res_[0] = theta_;
-          scan_data.push_back(res_);
-          if (theta_ < min_theta)
+          if (!inverse1_)
           {
-            min_theta = theta_;
-          }
-          if (theta_ > max_theta)
-          {
-            max_theta = theta_;
+            cloud_.points.push_back(pt);
+            float r_ = GET_R(pt.x, pt.y);
+            float theta_ = GET_THETA(pt.x, pt.y);
+            std::array<float, 2> res_;
+            res_[1] = r_;
+            res_[0] = theta_;
+            scan_data.push_back(res_);
+            if (theta_ < min_theta)
+            {
+              min_theta = theta_;
+            }
+            if (theta_ > max_theta)
+            {
+              max_theta = theta_;
+            }
           }
         }
         count++;
@@ -123,31 +141,47 @@ private:
         pt.y =
             temp_x * std::sin(laser2Alpha_ * M_PI / 180) + temp_y * std::cos(laser2Alpha_ * M_PI / 180) + laser2YOff_;
         pt.z = laser2ZOff_;
-        if (i < (laser2AngleMin_ * M_PI / 180))
+        if ((i < (laser2AngleMin_ * M_PI / 180)) || (i > (laser2AngleMax_ * M_PI / 180)))
         {
-        }
-        else if (i > (laser2AngleMax_ * M_PI / 180))
-        {
+          if (inverse2_)
+          {
+            cloud_.points.push_back(pt);
+            float r_ = GET_R(pt.x, pt.y);
+            float theta_ = GET_THETA(pt.x, pt.y);
+            std::array<float, 2> res_;
+            res_[1] = r_;
+            res_[0] = theta_;
+            scan_data.push_back(res_);
+            if (theta_ < min_theta)
+            {
+              min_theta = theta_;
+            }
+            if (theta_ > max_theta)
+            {
+              max_theta = theta_;
+            }
+          }
         }
         else
         {
-          // if(!(isnan(pt.x)) && !(isnan(pt.y))){
-          cloud_.points.push_back(pt);
-          float r_ = GET_R(pt.x, pt.y);
-          float theta_ = GET_THETA(pt.x, pt.y);
-          std::array<float, 2> res_;
-          res_[1] = r_;
-          res_[0] = theta_;
-          scan_data.push_back(res_);
-          if (theta_ < min_theta)
+          if (!inverse2_)
           {
-            min_theta = theta_;
+            cloud_.points.push_back(pt);
+            float r_ = GET_R(pt.x, pt.y);
+            float theta_ = GET_THETA(pt.x, pt.y);
+            std::array<float, 2> res_;
+            res_[1] = r_;
+            res_[0] = theta_;
+            scan_data.push_back(res_);
+            if (theta_ < min_theta)
+            {
+              min_theta = theta_;
+            }
+            if (theta_ > max_theta)
+            {
+              max_theta = theta_;
+            }
           }
-          if (theta_ > max_theta)
-          {
-            max_theta = theta_;
-          }
-          //}
         }
         count++;
       }
@@ -221,6 +255,7 @@ private:
     this->declare_parameter("laser1G", 0);
     this->declare_parameter("laser1B", 0);
     this->declare_parameter("show1", true);
+    this->declare_parameter("inverse1", false);
 
     this->declare_parameter("scanTopic2", "lidar_rear_left/scan");
     this->declare_parameter("laser2XOff", 0.315);
@@ -233,6 +268,7 @@ private:
     this->declare_parameter("laser2G", 0);
     this->declare_parameter("laser2B", 255);
     this->declare_parameter("show2", true);
+    this->declare_parameter("inverse2", false);
   }
   void refresh_params()
   {
@@ -249,6 +285,7 @@ private:
     this->get_parameter_or<uint8_t>("laser1G", laser1G_, 0);
     this->get_parameter_or<uint8_t>("laser1B", laser1B_, 0);
     this->get_parameter_or<bool>("show1", show1_, true);
+    this->get_parameter_or<bool>("inverse1", inverse1_, false);
     this->get_parameter_or<std::string>("scanTopic2", topic2_, "lidar_rear_left/scan");
     this->get_parameter_or<float>("laser2XOff", laser2XOff_, 0.0);
     this->get_parameter_or<float>("laser2YOff", laser2YOff_, 0.0);
@@ -260,9 +297,10 @@ private:
     this->get_parameter_or<uint8_t>("laser2G", laser2G_, 0);
     this->get_parameter_or<uint8_t>("laser2B", laser2B_, 0);
     this->get_parameter_or<bool>("show2", show2_, false);
+    this->get_parameter_or<bool>("inverse2", inverse2_, false);
   }
   std::string topic1_, topic2_, cloudTopic_, cloudFrameId_;
-  bool show1_, show2_;
+  bool show1_, show2_, inverse1_, inverse2_;
   float laser1XOff_, laser1YOff_, laser1ZOff_, laser1Alpha_, laser1AngleMin_, laser1AngleMax_;
   uint8_t laser1R_, laser1G_, laser1B_;
 

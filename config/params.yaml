@@ -31,6 +31,8 @@
     scanTopic2: /lidar_2/scan
     show1: true
     show2: true
+    inverse1: false
+    inverse2: false
     use_sim_time: false
 
 /pointcloud_to_laserscan:
