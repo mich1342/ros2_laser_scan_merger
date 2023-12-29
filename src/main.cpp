@@ -140,7 +140,7 @@ private:
         int used_count_ = count;
         if (flip2_)
         {
-          used_count_ = (int)laser1_->ranges.size() - count;
+          used_count_ = (int)laser2_->ranges.size() - count;
         }
 
         float temp_x = laser2_->ranges[used_count_] * std::cos(i);
