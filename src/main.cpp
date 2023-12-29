@@ -70,9 +70,13 @@ private:
       {
         pcl::PointXYZRGB pt;
         pt = pcl::PointXYZRGB(laser1R_, laser1G_, laser1B_);
-
-        float temp_x = laser1_->ranges[count] * std::cos(i);
-        float temp_y = laser1_->ranges[count] * std::sin(i);
+        int used_count_ = count;
+        if (flip1_)
+        {
+          used_count_ = (int)laser1_->ranges.size() - count;
+        }
+        float temp_x = laser1_->ranges[used_count_] * std::cos(i);
+        float temp_y = laser1_->ranges[used_count_] * std::sin(i);
         pt.x =
             temp_x * std::cos(laser1Alpha_ * M_PI / 180) - temp_y * std::sin(laser1Alpha_ * M_PI / 180) + laser1XOff_;
         pt.y =
@@ -133,9 +137,14 @@ private:
         pcl::PointXYZRGB pt;
         pt = pcl::PointXYZRGB(laser2R_, laser2G_, laser2B_);
 
-        // pcl::PointXYZ pt;
-        float temp_x = laser2_->ranges[count] * std::cos(i);
-        float temp_y = laser2_->ranges[count] * std::sin(i);
+        int used_count_ = count;
+        if (flip2_)
+        {
+          used_count_ = (int)laser1_->ranges.size() - count;
+        }
+
+        float temp_x = laser2_->ranges[used_count_] * std::cos(i);
+        float temp_y = laser2_->ranges[used_count_] * std::sin(i);
         pt.x =
             temp_x * std::cos(laser2Alpha_ * M_PI / 180) - temp_y * std::sin(laser2Alpha_ * M_PI / 180) + laser2XOff_;
         pt.y =
@@ -255,6 +264,7 @@ private:
     this->declare_parameter("laser1G", 0);
     this->declare_parameter("laser1B", 0);
     this->declare_parameter("show1", true);
+    this->declare_parameter("flip1", false);
     this->declare_parameter("inverse1", false);
 
     this->declare_parameter("scanTopic2", "lidar_rear_left/scan");
@@ -268,6 +278,7 @@ private:
     this->declare_parameter("laser2G", 0);
     this->declare_parameter("laser2B", 255);
     this->declare_parameter("show2", true);
+    this->declare_parameter("flip2", false);
     this->declare_parameter("inverse2", false);
   }
   void refresh_params()
@@ -285,6 +296,7 @@ private:
     this->get_parameter_or<uint8_t>("laser1G", laser1G_, 0);
     this->get_parameter_or<uint8_t>("laser1B", laser1B_, 0);
     this->get_parameter_or<bool>("show1", show1_, true);
+    this->get_parameter_or<bool>("flip1", flip1_, false);
     this->get_parameter_or<bool>("inverse1", inverse1_, false);
     this->get_parameter_or<std::string>("scanTopic2", topic2_, "lidar_rear_left/scan");
     this->get_parameter_or<float>("laser2XOff", laser2XOff_, 0.0);
@@ -297,10 +309,11 @@ private:
     this->get_parameter_or<uint8_t>("laser2G", laser2G_, 0);
     this->get_parameter_or<uint8_t>("laser2B", laser2B_, 0);
     this->get_parameter_or<bool>("show2", show2_, false);
+    this->get_parameter_or<bool>("flip2", flip2_, false);
     this->get_parameter_or<bool>("inverse2", inverse2_, false);
   }
   std::string topic1_, topic2_, cloudTopic_, cloudFrameId_;
-  bool show1_, show2_, inverse1_, inverse2_;
+  bool show1_, show2_, flip1_, flip2_, inverse1_, inverse2_;
   float laser1XOff_, laser1YOff_, laser1ZOff_, laser1Alpha_, laser1AngleMin_, laser1AngleMax_;
   uint8_t laser1R_, laser1G_, laser1B_;
 
