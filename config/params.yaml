@@ -1,5 +1,7 @@
 /ros2_laser_scan_merger:
   ros__parameters:
+    flip1: false
+    flip2: false
     inverse1: true
     inverse2: true
     laser1Alpha: 0.0
@@ -22,6 +24,10 @@
     laser2ZOff: 0.176
     pointCloudTopic: cloud_in
     pointCloutFrameId: laser
+    qos_overrides./parameter_events.publisher.depth: 1000
+    # qos_overrides./parameter_events.publisher.durability: volatile
+    # qos_overrides./parameter_events.publisher.history: keep_last
+    qos_overrides./parameter_events.publisher.reliability: best_effort
     scanTopic1: /lidar_1/scan
     scanTopic2: /lidar_2/scan
     show1: true
@@ -42,9 +48,9 @@
       /parameter_events:
         publisher:
           depth: 1000
-          durability: volatile
-          history: keep_last
-          reliability: reliable
+          # durability: volatile
+          # history: keep_last
+          reliability: best_effort
     queue_size: 16
     range_max: 10.0
     range_min: 0.35

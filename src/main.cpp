@@ -30,13 +30,13 @@ public:
     laser1_ = std::make_shared<sensor_msgs::msg::LaserScan>();
     laser2_ = std::make_shared<sensor_msgs::msg::LaserScan>();
 
-    auto default_qos = rclcpp::QoS(rclcpp::SystemDefaultsQoS());
+    auto default_qos = rclcpp::QoS(rclcpp::SensorDataQoS());
     sub1_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
         topic1_, default_qos, std::bind(&scanMerger::scan_callback1, this, std::placeholders::_1));
     sub2_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
         topic2_, default_qos, std::bind(&scanMerger::scan_callback2, this, std::placeholders::_1));
 
-    point_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(cloudTopic_, rclcpp::SystemDefaultsQoS());
+    point_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(cloudTopic_, rclcpp::SensorDataQoS());
     RCLCPP_INFO(this->get_logger(), "Hello");
   }
 
