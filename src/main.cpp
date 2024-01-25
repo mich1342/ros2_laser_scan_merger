@@ -65,7 +65,15 @@ private:
     float max_theta = 0;
     if (show1_ && laser1_)
     {
-      for (float i = laser1_->angle_min; i <= laser1_->angle_max && count < laser1_->ranges.size();
+      float temp_min_, temp_max_;
+      if( laser1_->angle_min < laser1_->angle_max){
+        temp_min_ = laser1_->angle_min;
+        temp_max_ = laser1_->angle_max;
+      } else{
+        temp_min_ = laser1_->angle_max;
+        temp_max_ = laser1_->angle_min;
+      }
+      for (float i = temp_min_; i <= temp_max_ && count < laser1_->ranges.size();
            i += laser1_->angle_increment)
       {
         pcl::PointXYZRGB pt;
@@ -131,7 +139,15 @@ private:
     count = 0;
     if (show2_ && laser2_)
     {
-      for (float i = laser2_->angle_min; i <= laser2_->angle_max && count < laser2_->ranges.size();
+      float temp_min_, temp_max_;
+      if( laser2_->angle_min < laser2_->angle_max){
+        temp_min_ = laser2_->angle_min;
+        temp_max_ = laser2_->angle_max;
+      } else{
+        temp_min_ = laser2_->angle_max;
+        temp_max_ = laser2_->angle_min;
+      }
+      for (float i = temp_min_; i <= temp_max_ && count < laser2_->ranges.size();
            i += laser2_->angle_increment)
       {
         pcl::PointXYZRGB pt;
