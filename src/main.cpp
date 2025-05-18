@@ -216,6 +216,14 @@ private:
     pcl::toROSMsg(cloud_, *pc2_msg_);
     pc2_msg_->header.frame_id = cloudFrameId_;
     pc2_msg_->header.stamp = now();
+    if (show1_ && laser1_)
+    {
+      pc2_msg_->header.stamp = laser1_->header.stamp;  
+    }
+    if (show2_ && laser2_)
+    {
+      pc2_msg_->header.stamp = laser2_->header.stamp;  
+    }
     pc2_msg_->is_dense = false;
     point_cloud_pub_->publish(*pc2_msg_);
   }
