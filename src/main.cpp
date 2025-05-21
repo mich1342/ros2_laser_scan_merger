@@ -83,8 +83,15 @@ private:
         {
           used_count_ = (int)laser1_->ranges.size() - 1 - count;
         }
-        float temp_x = laser1_->ranges[used_count_] * std::cos(i);
-        float temp_y = laser1_->ranges[used_count_] * std::sin(i);
+
+        float range = laser1_->ranges[used_count_];
+        if (!std::isfinite(range) || range <= 0.0f) {
+          count++;
+          continue;
+        }
+        float temp_x = range * std::cos(i);
+        float temp_y = range * std::sin(i);
+        
         pt.x =
             temp_x * std::cos(laser1Alpha_ * M_PI / 180) - temp_y * std::sin(laser1Alpha_ * M_PI / 180) + laser1XOff_;
         pt.y =
@@ -159,8 +166,14 @@ private:
           used_count_ = (int)laser2_->ranges.size() - 1 - count;
         }
 
-        float temp_x = laser2_->ranges[used_count_] * std::cos(i);
-        float temp_y = laser2_->ranges[used_count_] * std::sin(i);
+        float range = laser2_->ranges[used_count_];
+        if (!std::isfinite(range) || range <= 0.0f) {
+          count++;
+          continue;
+        }
+        float temp_x = range * std::cos(i);
+        float temp_y = range * std::sin(i);
+
         pt.x =
             temp_x * std::cos(laser2Alpha_ * M_PI / 180) - temp_y * std::sin(laser2Alpha_ * M_PI / 180) + laser2XOff_;
         pt.y =
