@@ -91,7 +91,7 @@ private:
         }
         float temp_x = range * std::cos(i);
         float temp_y = range * std::sin(i);
-        
+
         pt.x =
             temp_x * std::cos(laser1Alpha_ * M_PI / 180) - temp_y * std::sin(laser1Alpha_ * M_PI / 180) + laser1XOff_;
         pt.y =
@@ -147,7 +147,8 @@ private:
     if (show2_ && laser2_)
     {
       float temp_min_, temp_max_;
-      if(!std::isfinite(range) || range <= laser2_->range_min || range >= laser2_->range_max){
+      if (laser2_->angle_min < laser2_->angle_max)
+      {
         temp_min_ = laser2_->angle_min;
         temp_max_ = laser2_->angle_max;
       } else{
@@ -167,7 +168,8 @@ private:
         }
 
         float range = laser2_->ranges[used_count_];
-        if (!std::isfinite(range) || range <= 0.0f) {
+        if (!std::isfinite(range) || range <= laser2_->range_min || range >= laser2_->range_max)
+        {
           count++;
           continue;
         }
@@ -231,11 +233,11 @@ private:
     pc2_msg_->header.stamp = now();
     if (show1_ && laser1_)
     {
-      pc2_msg_->header.stamp = laser1_->header.stamp;  
+      pc2_msg_->header.stamp = laser1_->header.stamp;
     }
     if (show2_ && laser2_)
     {
-      pc2_msg_->header.stamp = laser2_->header.stamp;  
+      pc2_msg_->header.stamp = laser2_->header.stamp;
     }
     pc2_msg_->is_dense = false;
     point_cloud_pub_->publish(*pc2_msg_);
