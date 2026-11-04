@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(ros2_laser_scan_merger)
 
 # Default to C99
@@ -25,7 +25,7 @@ find_package(rcl_interfaces REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
 find_package(PCL REQUIRED)
 
 include_directories(
@@ -33,15 +33,15 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 add_executable(ros2_laser_scan_merger src/main.cpp)
-ament_target_dependencies(ros2_laser_scan_merger 
-  rclcpp 
-  std_msgs 
-  sensor_msgs
-  pcl_conversions
-  rcl_interfaces
-  rcutils
-  tf2_geometry_msgs
-  geometry_msgs
+target_link_libraries(ros2_laser_scan_merger 
+  rclcpp::rclcpp 
+  std_msgs::std_msgs 
+  sensor_msgs::sensor_msgs
+  pcl_conversions::pcl_conversions
+  rcl_interfaces::rcl_interfaces
+  rcutils::rcutils
+  tf2_geometry_msgs::tf2_geometry_msgs
+  geometry_msgs::geometry_msgs
 )
 install(DIRECTORY
   launch
