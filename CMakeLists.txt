@@ -15,34 +15,40 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(DEPENDENCIES
+    rclcpp
+    sensor_msgs
+    std_msgs
+    rcl_interfaces
+    rcutils
+    tf2_geometry_msgs
+    geometry_msgs
+)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
-find_package(rcl_interfaces REQUIRED)
-find_package(rcutils REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(Boost REQUIRED)
-find_package(PCL REQUIRED)
+
+if("${pcl_conversions_VERSION}" VERSION_GREATER_EQUAL "2.10.0")
+    list(APPEND DEPENDENCIES pcl_conversions)
+endif()
+
+foreach(Dependency IN ITEMS ${DEPENDENCIES})
+    find_package(${Dependency} REQUIRED)
+endforeach()
+
+foreach(Dependency IN ITEMS ${DEPENDENCIES})
+    list(APPEND INCLUDE_DEPENDS "${Dependency}::${Dependency}")
+endforeach()
 
 include_directories(
   include
-  ${PCL_INCLUDE_DIRS}
+  ${pcl_conversions_INCLUDE_DIRS}
 )
+
 add_executable(ros2_laser_scan_merger src/main.cpp)
-target_link_libraries(ros2_laser_scan_merger 
-  rclcpp::rclcpp 
-  std_msgs::std_msgs 
-  sensor_msgs::sensor_msgs
-  pcl_conversions::pcl_conversions
-  rcl_interfaces::rcl_interfaces
-  rcutils::rcutils
-  tf2_geometry_msgs::tf2_geometry_msgs
-  geometry_msgs::geometry_msgs
-)
+target_link_libraries(ros2_laser_scan_merger ${INCLUDE_DEPENDS})
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}
