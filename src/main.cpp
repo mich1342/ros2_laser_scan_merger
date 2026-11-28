@@ -60,7 +60,7 @@ private:
     refresh_params();
     pcl::PointCloud<pcl::PointXYZRGB> cloud_;
     std::vector<std::array<float, 2>> scan_data;
-    int count = 0;
+    std::uint64_t count = 0;
     float min_theta = 0;
     float max_theta = 0;
     if (show1_ && laser1_)
